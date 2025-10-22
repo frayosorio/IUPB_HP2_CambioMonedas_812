@@ -31,4 +31,12 @@ public class CambioMonedaServicio {
         }
     }
 
+    public static List<String> getMonedas(List<CambioMoneda> cambiosMonedas) {
+        return cambiosMonedas.stream()
+                .map(CambioMoneda::getMoneda)// .map(item -> item.getMoneda())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
 }

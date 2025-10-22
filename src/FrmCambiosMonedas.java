@@ -1,11 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 import java.util.List;
 
@@ -22,15 +18,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-
 import datechooser.beans.DateChooserCombo;
-
+import entidades.CambioMoneda;
+import servicios.CambioMonedaServicio;
 
 public class FrmCambiosMonedas extends JFrame {
 
@@ -40,6 +30,7 @@ public class FrmCambiosMonedas extends JFrame {
     private JPanel pnlGrafica;
     private JPanel pnlEstadisticas;
 
+    private List<CambioMoneda> cambiosMonedas;
     private List<String> monedas;
 
     public FrmCambiosMonedas() {
@@ -115,7 +106,12 @@ public class FrmCambiosMonedas extends JFrame {
     }
 
     private void cargarDatos() {
+        String nombreArchivo = System.getProperty("user.dir") + "/src/datos/Cambios Monedas.csv";
+        cambiosMonedas = CambioMonedaServicio.getDatos(nombreArchivo);
+        monedas = CambioMonedaServicio.getMonedas(cambiosMonedas);
 
+        DefaultComboBoxModel modelo = new DefaultComboBoxModel(monedas.toArray());
+        cmbMoneda.setModel(modelo);
     }
 
     private void btnGraficarClick() {

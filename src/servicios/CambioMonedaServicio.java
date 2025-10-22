@@ -39,4 +39,13 @@ public class CambioMonedaServicio {
                 .collect(Collectors.toList());
     }
 
+    public static List<CambioMoneda> filtrar(List<CambioMoneda> cambioMonedas,
+            String moneda, LocalDate desde, LocalDate hasta) {
+        return cambioMonedas.stream()
+                .filter(item -> item.getMoneda().equals(moneda) &&
+                        item.getFecha().isAfter(desde) &&
+                        item.getFecha().isBefore(hasta))
+                .collect(Collectors.toList());
+    }
+
 }

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
@@ -43,9 +44,14 @@ public class CambioMonedaServicio {
             String moneda, LocalDate desde, LocalDate hasta) {
         return cambioMonedas.stream()
                 .filter(item -> item.getMoneda().equals(moneda) &&
-                        item.getFecha().isAfter(desde) &&
-                        item.getFecha().isBefore(hasta))
+                        !(item.getFecha().isBefore(desde) ||
+                                item.getFecha().isAfter(hasta)))
                 .collect(Collectors.toList());
+    }
+
+    public static Map<LocalDate, Double> extraerDatosGrafica(List<CambioMoneda> cambios) {
+        return cambios.stream()
+                .collect(Collectors.toMap(CambioMoneda::getFecha, CambioMoneda::getCambio));
     }
 
 }

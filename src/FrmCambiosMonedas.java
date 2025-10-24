@@ -2,7 +2,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.time.ZoneId;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -12,11 +12,19 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
 import datechooser.beans.DateChooserCombo;
 import entidades.CambioMoneda;
@@ -115,7 +123,44 @@ public class FrmCambiosMonedas extends JFrame {
     }
 
     private void btnGraficarClick() {
+        if (cmbMoneda.getSelectedIndex() >= 0) {
 
+            var moneda = (String) cmbMoneda.getSelectedItem();
+            var desde = dccDesde.getSelectedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            var hasta = dccHasta.getSelectedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            if (moneda.isEmpty() || desde.isAfter(hasta)) {
+                JOptionPane.showMessageDialog(null, "Datos no validos");
+                return;
+            }
+
+            var datosGrafica = CambioMonedaServicio
+                    .extraerDatosGrafica(CambioMonedaServicio.filtrar(cambiosMonedas, moneda, desde, hasta));
+
+            TimeSeries serie = new TimeSeries("Cambio en USD de " + moneda);
+            for (var item : datosGrafica.entrySet()) {
+                var fecha = item.getKey();
+                serie.addOrUpdate(new Day(fecha.getDayOfMonth(), fecha.getMonthValue(), fecha.getYear()),
+                        item.getValue());
+            }
+
+            TimeSeriesCollection series = new TimeSeriesCollection();
+            series.addSeries(serie);
+
+            JFreeChart graficador = ChartFactory.createTimeSeriesChart(
+                    "Gráfica de Cambio de " + moneda + " vs. Fecha",
+                    "Fecha",
+                    "Cambio en USD",
+                    series);
+
+            ChartPanel pnlGraficador = new ChartPanel(graficador);
+            pnlGraficador.setPreferredSize(new Dimension(600, 400));
+
+            pnlGrafica.removeAll();
+            pnlGrafica.setLayout(new BorderLayout());
+            pnlGrafica.add(pnlGraficador, BorderLayout.CENTER);
+            pnlGrafica.revalidate();
+        }
     }
 
     private void btnCalcularEstadisticasClick() {

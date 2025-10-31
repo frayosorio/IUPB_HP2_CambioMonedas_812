@@ -1,5 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.ZoneId;
@@ -160,11 +162,33 @@ public class FrmCambiosMonedas extends JFrame {
             pnlGrafica.setLayout(new BorderLayout());
             pnlGrafica.add(pnlGraficador, BorderLayout.CENTER);
             pnlGrafica.revalidate();
+
+            tpCambiosMoneda.setSelectedIndex(0);
         }
     }
 
     private void btnCalcularEstadisticasClick() {
+        if (cmbMoneda.getSelectedIndex() >= 0) {
+            var moneda = (String) cmbMoneda.getSelectedItem();
+            var desde = dccDesde.getSelectedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            var hasta = dccHasta.getSelectedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
+            var estadisticas = CambioMonedaServicio.getEstadisticas(cambiosMonedas, moneda, desde, hasta);
+
+            pnlEstadisticas.setLayout(new GridBagLayout());
+            int fila = 0;
+            for (var estadistica : estadisticas.entrySet()) {
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.gridx = 0;
+                gbc.gridy = fila;
+                pnlEstadisticas.add(new JLabel(estadistica.getKey()), gbc);
+                gbc.gridx = 1;
+                pnlEstadisticas.add(new JLabel(String.format("%.2f", estadistica.getValue())), gbc);
+                fila++;
+            }
+
+            tpCambiosMoneda.setSelectedIndex(1);
+        }
     }
 
 }

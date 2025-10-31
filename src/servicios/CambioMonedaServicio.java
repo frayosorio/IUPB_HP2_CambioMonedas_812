@@ -5,11 +5,12 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.DataFormatException;
 
 import entidades.CambioMoneda;
 
@@ -88,8 +89,46 @@ public class CambioMonedaServicio {
                         .orElse(0);
     }
 
-    public static double getMediana(List<Double> datos){
+    public static double getMediana(List<Double> datos) {
+        if (datos.isEmpty()) {
+            return 0;
+        }
+        var datosOrdenados = datos.stream().sorted().collect(Collectors.toList());
+        var n = datosOrdenados.size();
+        return n % 2 == 0 ? (datosOrdenados.get(n / 2) + datosOrdenados.get(n / 2 - 1)) / 2 : datosOrdenados.get(n / 2);
+    }
 
+    public static double getModa(List<Double> datos) {
+        if (datos.isEmpty()) {
+            return 0;
+        }
+
+        return datos.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(0.0);
+    }
+
+    public static Map<String, Double> getEstadisticas(List<CambioMoneda> cambioMonedas,
+            String moneda, LocalDate desde, LocalDate hasta) {
+
+        var datosFiltrados = filtrar(cambioMonedas, moneda, desde, hasta);
+        var cambios = datosFiltrados.stream()
+                .map(CambioMoneda::getCambio)
+                .collect(Collectors.toList());
+
+        Map<String, Double> estadisticas = new LinkedHashMap<>();
+        estadisticas.put("Promedio", getPromedio(cambios));
+        estadisticas.put("Desviación Estandar", getDesviacionEstandar(cambios));
+        estadisticas.put("Máximo", getMaximo(cambios));
+        estadisticas.put("Mínimo", getMinimo(cambios));
+        estadisticas.put("Mediana", getMediana(cambios));
+        estadisticas.put("Moda", getModa(cambios));
+
+        return estadisticas;
     }
 
 }
